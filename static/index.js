@@ -1,72 +1,72 @@
-// Getting references
-// var selDataset = document.getElementById("selDataset");
-// var PANEL = document.getElementById("sample-metadata");
-// var PIE = document.getElementById("pie");
-// var BUBBLE = document.getElementById("bubble");
-// var Gauge = document.getElementById("gauge");
-
-function updateMetaData(data) {
-    // Reference to Panel element for sample metadata
-    var PANEL = document.getElementById("sample-metadata");
-    // Clear any existing metadata
-    PANEL.innerHTML = '';
+// reload MetaData
+function reloadMeta(Data){
+     var met = document.getElementById("sample_metadata");
+    // Clear pre_existed metadata
+    met.innerHTML = '';
     // Loop through all of the keys in the json response and
     // create new metadata tags
-    for(var key in data) {
-        h6tag = document.createElement("h6");
-        h6Text = document.createTextNode(`${key}: ${data[key]}`);
-        h6tag.append(h6Text);
-        PANEL.appendChild(h6tag);
+    for(var key in Data) {
+        tag = document.createElement("h5");
+        Content = document.createTextNode(`${key}: ${Data[key]}`);
+        tag.append(Content);
+        met.appendChild(tag);
     }
 }
+
 function buildCharts(sampleData, otuData) {
     // Loop through sample data and find the OTU Taxonomic Name
-    var labels = sampleData[0]['otu_ids'].map(function(item) {
+    var sampleValues = sampleData['sample_values'];
+    var otuIDs = sampleData['otu_ids'];
+    var labels = otuIDs.map(function(item) {
         return otuData[item]
     });
+    // var OtuIDs = otuIDs.map(String)
     // Build Bubble Chart
     var bubbleLayout = {
         margin: { t: 0 },
+        height: 800,
+        width: 1200,
         hovermode: 'closest',
         xaxis: { title: 'OTU ID' }
     };
     var bubbleData = [{
-        x: sampleData[0]['otu_ids'],
-        y: sampleData[0]['sample_values'],
+        x: sampleData['otu_ids'],
+        y: sampleData['sample_values'],
         text: labels,
         mode: 'markers',
         marker: {
-            size: sampleData[0]['sample_values'],
-            color: sampleData[0]['otu_ids'],
+            size: sampleData['sample_values'],
+            color: sampleData['otu_ids'],
             colorscale: "Earth",
         }
     }];
-    var BUBBLE = document.getElementById('bubble');
+    var BUBBLE = document.getElementById('Bubble');
     Plotly.plot(BUBBLE, bubbleData, bubbleLayout);
     // Build Pie Chart
-    console.log(sampleData[0]['sample_values'].slice(0, 10))
+    console.log(sampleData['sample_values'].slice(0, 10))
     var pieData = [{
-        values: sampleData[0]['sample_values'].slice(0, 10),
-        labels: sampleData[0]['otu_ids'].slice(0, 10),
-        hovertext: labels.slice(0, 10),
+        values: [sampleValues.slice(0, 10)],
+        labels: [otuIDs.slice(0, 10)],
+        hovertext: [labels.slice(0, 10)],
         hoverinfo: 'hovertext',
         type: 'pie'
     }];
     var pieLayout = {
         margin: { t: 0, l: 0 }
     };
-    var PIE = document.getElementById('pie');
+    var PIE = document.getElementById('Pie');
     Plotly.plot(PIE, pieData, pieLayout);
 };
 function updateCharts(sampleData, otuData) {
-    var sampleValues = sampleData[0]['sample_values'];
-    var otuIDs = sampleData[0]['otu_ids'];
+    var sampleValues = sampleData['sample_values'];
+    var otuIDs = sampleData['otu_ids'];
     // Return the OTU Description for each otuID in the dataset
     var labels = otuIDs.map(function(item) {
         return otuData[item]
     });
+    // var OtuIDs = otuIDs.map(String)
     // Update the Bubble Chart with the new data
-    var BUBBLE = document.getElementById('bubble');
+    var BUBBLE = document.getElementById('Bubble');
     Plotly.restyle(BUBBLE, 'x', [otuIDs]);
     Plotly.restyle(BUBBLE, 'y', [sampleValues]);
     Plotly.restyle(BUBBLE, 'text', [labels]);
@@ -74,7 +74,7 @@ function updateCharts(sampleData, otuData) {
     Plotly.restyle(BUBBLE, 'marker.color', [otuIDs]);
     // Update the Pie Chart with the new data
     // Use slice to select only the top 10 OTUs for the pie chart
-    var PIE = document.getElementById('pie');
+    var PIE = document.getElementById('Pie');
     var pieUpdate = {
         values: [sampleValues.slice(0, 10)],
         labels: [otuIDs.slice(0, 10)],
@@ -95,7 +95,7 @@ function getData(sample, callback) {
     });
     Plotly.d3.json(`/metadata/${sample}`, function(error, metaData) {
         if (error) return console.warn(error);
-        updateMetaData(metaData);
+        reloadMeta(metaData);
     })
     // BONUS - Build the Gauge Chart
     buildGauge(sample);
@@ -123,21 +123,21 @@ function init() {
 }
 // Initialize the dashboard
 init();
-/**
-* BONUS Solution
-**/
+
+
+// build a Guage Graph
 function buildGauge(sample) {
     Plotly.d3.json(`/wfreq/${sample}`, function(error, wfreq) {
         if (error) return console.warn(error);
-        // Enter the washing frequency between 0 and 180
-        var level = wfreq*20;
-        // Trig to calc meter point
+        // rescale the washing frequency to range 0 - 180
+        var level = wfreq * 20.0;
+
         var degrees = 180 - level,
             radius = .5;
         var radians = degrees * Math.PI / 180;
         var x = radius * Math.cos(radians);
         var y = radius * Math.sin(radians);
-        // Path: may have to change to create a better triangle
+
         var mainPath = 'M -.0 -0.05 L .0 0.05 L ',
             pathX = String(x),
             space = ' ',
@@ -157,12 +157,11 @@ function buildGauge(sample) {
         textinfo: 'text',
         textposition:'inside',
         marker: {
-            colors:[
-                'rgba(0, 105, 11, .5)', 'rgba(10, 120, 22, .5)',
-                'rgba(14, 127, 0, .5)', 'rgba(110, 154, 22, .5)',
-                'rgba(170, 202, 42, .5)', 'rgba(202, 209, 95, .5)',
-                'rgba(210, 206, 145, .5)', 'rgba(232, 226, 202, .5)',
-                'rgba(240, 230, 215, .5)', 'rgba(255, 255, 255, 0)']},
+            colors:['rgba(0, 139, 51, 1)','rgba(0, 140, 76, 1)', 'rgba(0, 140, 76, 0.7)',
+                    'rgba(14, 127, 0, .5)', 'rgba(110, 154, 22, .5)',
+                     'rgba(170, 202, 42, .5)', 'rgba(202, 209, 95, .5)',
+                     'rgba(210, 206, 145, .5)', 'rgba(232, 226, 202, .5)',
+                     'rgba(255, 255, 255, 0)']},
         labels: ['8-9', '7-8', '6-7', '5-6', '4-5', '3-4', '2-3', '1-2', '0-1', ''],
         hoverinfo: 'label',
         hole: .5,
@@ -185,8 +184,3 @@ function buildGauge(sample) {
                     showgrid: false, range: [-1, 1]},
         yaxis: {zeroline:false, showticklabels:false,
                     showgrid: false, range: [-1, 1]}
-        };
-        var GAUGE = document.getElementById('gauge');
-        Plotly.newPlot(GAUGE, data, layout);
-    });
-}

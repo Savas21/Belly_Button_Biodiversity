@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 
 from flask import (
-                   Flask,
-                   render_template,
-                   jsonify,
-                   request,
-                   redirect)
+    Flask,
+    render_template,
+    jsonify,
+    request,
+    redirect)
 from flask import Flask, jsonify, render_template, request, flash, redirect
 from flask_sqlalchemy import SQLAlchemy
 
@@ -52,14 +52,14 @@ def home():
 # """List of sample names.
 # Returns a list of sample names in the format
 # [
-# "BB_940",
-# "BB_941",
-# "BB_943",
-# "BB_944",
-# "BB_945",
-# "BB_946",
-# "BB_947",
-# ...
+    # "BB_940",
+    # "BB_941",
+    # "BB_943",
+    # "BB_944",
+    # "BB_945",
+    # "BB_946",
+    # "BB_947",
+    # ...
 # ]
 
 # """
@@ -74,18 +74,18 @@ def names():
 # Returns a list of OTU descriptions in the following format
 
 # [
-# "Archaea;Euryarchaeota;Halobacteria;Halobacteriales;Halobacteriaceae;Halococcus",
-# "Archaea;Euryarchaeota;Halobacteria;Halobacteriales;Halobacteriaceae;Halococcus",
-# "Bacteria",
-# "Bacteria",
-# "Bacteria",
-# ...
+    # "Archaea;Euryarchaeota;Halobacteria;Halobacteriales;Halobacteriaceae;Halococcus",
+    # "Archaea;Euryarchaeota;Halobacteria;Halobacteriales;Halobacteriaceae;Halococcus",
+    # "Bacteria",
+    # "Bacteria",
+    # "Bacteria",
+    # ...
 # ]
 # """
 def otu():
     description = list(otu_id_df.lowest_taxonomic_unit_found)
     return jsonify(description)
-
+    
 @app.route('/metadata/<sample>')
 # """MetaData for a given sample.
 
@@ -94,12 +94,12 @@ def otu():
 # Returns a json dictionary of sample metadata in the format
 
 # {
-# AGE: 24,
-# BBTYPE: "I",
-# ETHNICITY: "Caucasian",
-# GENDER: "F",
-# LOCATION: "Beaufort/NC",
-# SAMPLEID: 940
+    # AGE: 24,
+    # BBTYPE: "I",
+    # ETHNICITY: "Caucasian",
+    # GENDER: "F",
+    # LOCATION: "Beaufort/NC",
+    # SAMPLEID: 940
 # }
 # """
 def meta(sample):
@@ -118,8 +118,8 @@ def meta(sample):
     sample_metadata['LOCATION'] = location
     sample_metadata['BBTYPE'] = BBTYPE.upper()
     return jsonify(sample_metadata)
-
-
+    
+    
 
 @app.route('/wfreq/<sample>')
 # """Weekly Washing Frequency as a number.
@@ -134,7 +134,7 @@ def wfreq(sample):
     all_meta = BB_Meta_df[BB_Meta_df['SAMPLEID'] == sampleID]
     wfreq = all_meta.iloc[0]["WFREQ"]
     return jsonify(int(wfreq))
-
+    
 @app.route('/samples/<sample>')
 # """OTU IDs and Sample Values for a given sample.
 
@@ -145,34 +145,35 @@ def wfreq(sample):
 # and `sample_values`
 
 # [
-# {
-# otu_ids: [
-# 1166,
-# 2858,
-# 481,
-# ...
-# ],
-# sample_values: [
-# 163,
-# 126,
-# 113,
-# ...
-# ]
-# }
+    # {
+        # otu_ids: [
+            # 1166,
+            # 2858,
+            # 481,
+            # ...
+        # ],
+        # sample_values: [
+            # 163,
+            # 126,
+            # 113,
+            # ...
+        # ]
+    # }
 # ]
 # """
 def samples(sample):
-    
+
     sort_samples_df = samples_df.sort_values(sample,ascending=False)
     otu_id = list(sort_samples_df.otu_id.astype(float))
     sample_values = list(sort_samples_df[sample].astype(float))
     #import pdb; pdb.set_trace()
     return jsonify({"otu_ids": otu_id, "sample_values": sample_values})
-
+    
 if __name__ == "__main__":
     app.run(debug=True)
 
 
 ##############################################################################################################33
 
-    
+
+

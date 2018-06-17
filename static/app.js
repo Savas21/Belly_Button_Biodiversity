@@ -184,3 +184,8 @@ function buildGauge(sample) {
                     showgrid: false, range: [-1, 1]},
         yaxis: {zeroline:false, showticklabels:false,
                     showgrid: false, range: [-1, 1]}
+        };
+        var GAUGE = document.getElementById('Gauge');
+        Plotly.newPlot(GAUGE, data, layout);
+    });
+}
